@@ -1,8 +1,8 @@
 # Lumo — normiga gvidilo pri la rastrumilo de FluoU
 
-> Stato: 2026-11-22 · Fazo 1 preta · celo 1.0 · MIT
+> Stato: 2026-11-22 · Fazo 2 preta · celo 1.0 · MIT
 >
-> **Versio:** 0.1.0
+> **Versio:** 0.2.0
 >
 > Ĉi tiu dokumento estas la deviga normo de Lumo, la sola rastrumilo
 > permesata por FluoU. Ĝi difinas la limojn, la objektojn, la rastrumadon,
@@ -167,6 +167,7 @@ eksterajn `match`-ojn.
   estas ignorata sen paniko.
 - **L22.** `kovradoj` de `Masko` `DEVI` havi almenaŭ `amplekso.0 × amplekso.1`
   bajtojn; tro mallonga tranĉaĵo estas ignorata (L08), ne legata eksteren.
+  La masko estas densa: vico post vico, sen paŝo.
 
 ### 3.4. Geometrio
 
@@ -481,8 +482,8 @@ la malĉefan numeron; la lasta estas `1.0.0`.
 
 La detaloj, la evitindaj eraroj kaj la akceptkriterioj estas en §10.
 
-**Stato de la efektivigo (2026-11-22).** Fazo 1 (`0.1.0`) estas preta; la
-ceteraj fazoj restas planitaj.
+**Stato de la efektivigo (2026-11-22).** Fazo 1 (`0.1.0`) kaj Fazo 2
+(`0.2.0`) estas pretaj; la ceteraj fazoj restas planitaj.
 
 ---
 
@@ -596,6 +597,19 @@ rondigitaj anguloj, ikonoj per maskoj kaj translokigita geometrio.
    `RondaRekto` 1024 × 768 en eldona konstruo); ĝi estas la referenco por la
    buĝetoj de Fazo 6.
 7. Neniu haketo de Fazo 1 ŝanĝiĝis.
+
+**Stato (2026-11-22).** Efektivigitaj: `Ordono::RondaRekto` (4 × 4
+superprovado kun specimenaj centroj `(2i + 1)/16`, R04–R06; radiuso limigita
+al duono de la pli mallonga flanko; `radiuso = 0` egala al `Plenigi`),
+`Ordono::Masko` (densa 8-bita kovrado, R03, L22; tro mallonga `kovradoj`
+ignorata), `Ordono::Translokigo`/`Maltranslokigo` (stako 8, R12; klipo restas
+en aparat-piksela spaco, L21 en testo per `debug_assert!`) kaj la komunranda
+testo por `Plenigi`, `RondaRekto` kaj `Masko`. La oraj haketoj
+`kadro-malhela-*` kaj `kadro-hela-*` (ses statoj) estas registritaj en
+`docs/FIKSAĴOJ.md` kaj reproduktataj de `tools/haketi.sh --kontroli`; la du
+haketoj de Fazo 1 restas senŝanĝaj. La nova pruvo `rondigo_kovrado_en_limoj`
+(R04–R06) estas en `docs/PRUVOJ.md` kaj en la DI-matrico. La mezuroj de la
+kanonika vojo estas en `docs/RENDIMENTO.md`.
 
 ### 10.3. Fazo 3 — 0.3.0 «BitmAPA teksto»
 
@@ -926,3 +940,4 @@ La jenaj temoj estas ekster la frostigo kaj bezonas apartajn dokumentojn:
 | 2026-11-21 | Unua versio: celoj, principoj, objektoj, rastrumado, teksto, kompozicio, determinismo, vojmapo |
 | 2026-11-21 | Aldonitaj la kvalita konstitucio (§8) kaj la naŭ detalaj fazoj (§10); maskoj kaj translokigo en §3.3; kovrado 8 × 8 ekde 0.6; TrueType movita al post-1.0 (T07) |
 | 2026-11-22 | Fazo 1 efektivigita (0.1.0): `Surfaco`, `Koloro`, `Rektangulo`, `Ordono` kaj `desegnu`; la loka pordego kaj la DI-matrico; la du Kani-pruvoj kaj la oraj haketoj |
+| 2026-11-22 | Fazo 2 efektivigita (0.2.0): `RondaRekto` kun 4 × 4 superprovado, `Masko`, `Translokigo`/`Maltranslokigo`; ses kadraj haketoj, la pruvo `rondigo_kovrado_en_limoj` kaj `docs/RENDIMENTO.md` |

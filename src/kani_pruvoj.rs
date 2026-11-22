@@ -1,6 +1,6 @@
 //! Formalaj pruvoj per Kani; ili ruliĝas nur en DI (Q02).
 
-use crate::desegnu::{Limoj, miksi_kanalojn, videbla_regiono};
+use crate::desegnu::{Limoj, kovrado_el_specimenoj, miksi_kanalojn, videbla_regiono};
 use crate::geometrio::Rektangulo;
 
 /// R07: kun premultiplika fonto la kunfandita rezulto neniam troas 255.
@@ -39,7 +39,7 @@ fn klipo_restas_en_surfaco() {
         alto: kani::any(),
     };
 
-    if let Some(regiono) = videbla_regiono(larĝo, alto, limoj, rektangulo) {
+    if let Some(regiono) = videbla_regiono(larĝo, alto, limoj, Limoj::el_rektangulo(rektangulo)) {
         assert!(regiono.x0 < regiono.x1);
         assert!(regiono.x1 <= larĝo);
         assert!(regiono.y0 < regiono.y1);
@@ -49,4 +49,12 @@ fn klipo_restas_en_surfaco() {
             assert!(regiono.x1 <= paŝo);
         }
     }
+}
+
+/// R04–R06: la kovrado de la 4 × 4-superprovado restas ≤ 255, ĉar ĝi venas
+/// el al plej 16 specimenoj.
+#[kani::proof]
+fn rondigo_kovrado_en_limoj() {
+    let specimenoj: [bool; 16] = kani::any();
+    assert!(kovrado_el_specimenoj(specimenoj) <= 255);
 }

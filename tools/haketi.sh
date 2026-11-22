@@ -10,7 +10,16 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 dosiero="docs/FIKSAĴOJ.md"
-fiksoj=("plena-ortangulo" "klipita-ortangulo")
+fiksoj=(
+    "plena-ortangulo"
+    "klipita-ortangulo"
+    "kadro-malhela-normala"
+    "kadro-malhela-ŝveba"
+    "kadro-malhela-premata"
+    "kadro-hela-normala"
+    "kadro-hela-ŝveba"
+    "kadro-hela-premata"
+)
 modo="${1:---kontroli}"
 hodiau=$(date +%F)
 
