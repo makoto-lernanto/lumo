@@ -88,6 +88,12 @@ pruvokatalogon, la orajn haketojn, la formaton, `clippy` sur ambaŭ arkoj, la
 testojn, la publikan dokumentaron kaj la eldonan konstruon. Kani mem ruliĝas
 nur en DI (`just miri` kaj `just permesiloj` restas apartaj).
 
+## Subskribado
+
+**Anonco (2026-11-22).** `makoto-lernanto` aldonis sian GPG-ŝlosilon por
+subskribi la komitaĵojn de Lumo. La etikedo «Verified» ĉe GitHub konfirmas, ke
+la subskribo kongruas kun la publikigita ŝlosilo.
+
 ## Licenco
 
 MIT. Vidu [LICENSE](LICENSE).
