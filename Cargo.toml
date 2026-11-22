@@ -1,0 +1,13 @@
+[package]
+name = "lumo"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.100"
+license = "MIT"
+description = "Pura Rust-rastrumilo por la grafika interfaco FluoU"
+
+[lib]
+path = "src/lib.rs"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(kani)"] }
