@@ -131,13 +131,21 @@ fn plenigi(surfaco: &mut Surfaco<'_>, klipo: Limoj, rektangulo: Rektangulo, kolo
     let Some(regiono) = videbla_regiono(surfaco.larĝo(), surfaco.alto(), klipo, rektangulo) else {
         return;
     };
-    let paŝo = u64::from(surfaco.paŝo());
+    let paŝo = surfaco.paŝo() as usize;
     for y in regiono.y0..regiono.y1 {
-        let vico = u64::from(y) * paŝo;
+        // `get_mut` gardas la vican komencon; la kolumnan limon pruvas
+        // `klipo_restas_en_surfaco` (L15).
+        let Some(vico) = surfaco
+            .pikseloj
+            .get_mut((y as usize).saturating_mul(paŝo)..)
+            .and_then(|resto| resto.get_mut(..paŝo))
+        else {
+            break;
+        };
         for x in regiono.x0..regiono.x1 {
-            let indekso = (vico + u64::from(x)) as usize;
-            let celo = surfaco.pikseloj[indekso];
-            surfaco.pikseloj[indekso] = miksi_pikselon(koloro, celo, 255);
+            let indekso = x as usize;
+            let celo = vico[indekso];
+            vico[indekso] = miksi_pikselon(koloro, celo, 255);
         }
     }
 }

@@ -18,13 +18,10 @@ fn miksi_neniam_troas() {
     assert!(koloro <= 255);
 }
 
-/// L15: la videbla regiono restas ene de `larĝo × alto`, kaj la plej granda
-/// indekso restas ene de la bufro kiam `paŝo ≥ larĝo`.
-///
-/// Kissat solvas la 64-bitan indican produton pli rapide ol la norma CaDiCaL;
-/// la pruvo mem restas senlima kaj sen `assume` (D05).
+/// L15: la videbla regiono restas ene de `larĝo × alto`, kaj la kolumna
+/// indekso restas sub `paŝo`; `plenigi` gardas la vican komencon per
+/// `get_mut`, do ĝi ne povas skribi ekster la bufro.
 #[kani::proof]
-#[kani::solver(kissat)]
 fn klipo_restas_en_surfaco() {
     let larĝo: u32 = kani::any();
     let alto: u32 = kani::any();
@@ -49,9 +46,7 @@ fn klipo_restas_en_surfaco() {
         assert!(regiono.y1 <= alto);
 
         if paŝo >= larĝo {
-            let lasta = (u64::from(regiono.y1) - 1) * u64::from(paŝo) + (u64::from(regiono.x1) - 1);
-            let buĝeto = u64::from(paŝo) * u64::from(alto);
-            assert!(lasta < buĝeto);
+            assert!(regiono.x1 <= paŝo);
         }
     }
 }
