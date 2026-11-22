@@ -146,7 +146,7 @@ fn miksi_pikselon(fonto: Koloro, celo: u32, kovrado: u8) -> u32 {
     (na << 24) | (nr << 16) | (ng << 8) | nb
 }
 
-fn kovrado_el_specimenoj(specimenoj: [bool; 16]) -> u32 {
+pub(crate) fn kovrado_el_specimenoj(specimenoj: [bool; 16]) -> u32 {
     let trafoj = u32::from(specimenoj[0])
         + u32::from(specimenoj[1])
         + u32::from(specimenoj[2])
