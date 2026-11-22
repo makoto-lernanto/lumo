@@ -11,7 +11,8 @@ cd "$(dirname "$0")/.."
 katalogo="docs/PRUVOJ.md"
 
 nunaj() {
-    grep -rhA1 --include='*.rs' '#\[kani::proof\]' src 2>/dev/null \
+    # Solver aŭ aliaj atributoj rajtas stari inter `#[kani::proof]` kaj `fn`.
+    grep -rhA8 --include='*.rs' '#\[kani::proof\]' src 2>/dev/null \
         | sed -n 's/.*fn \([A-Za-z0-9_]*\).*/\1/p' \
         | sort -u
 }
