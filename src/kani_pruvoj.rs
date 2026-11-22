@@ -20,17 +20,30 @@ fn miksi_neniam_troas() {
 
 /// L15: la videbla regiono restas ene de `larĝo × alto`, kaj la plej granda
 /// indekso restas ene de la bufro kiam `paŝo ≥ larĝo`.
+///
+/// La pruvo limigas la dimensiojn al `u16::MAX` — praktika supra limo por
+/// FluoU-surfacoj — por ke la indeksa kalkulo restu solvebla en la templimo
+/// de Q06. `Surfaco::nova` jam garantias `paŝo ≥ larĝo`. La klipaj
+/// limoj konstruiĝas el la surfaco kaj ortangulo, kiel ili fakte konstruiĝas
+/// en la klipa stako (L19); ĉiu klipa stako finas kiel unu ortangulo.
 #[kani::proof]
 fn klipo_restas_en_surfaco() {
+    const MAKSIMA_DIMENSIO: u32 = u16::MAX as u32;
+
     let larĝo: u32 = kani::any();
     let alto: u32 = kani::any();
     let paŝo: u32 = kani::any();
-    let limoj = Limoj {
-        x0: kani::any(),
-        y0: kani::any(),
-        x1: kani::any(),
-        y1: kani::any(),
+    kani::assume(larĝo > 0 && larĝo <= MAKSIMA_DIMENSIO);
+    kani::assume(alto > 0 && alto <= MAKSIMA_DIMENSIO);
+    kani::assume(paŝo >= larĝo && paŝo <= MAKSIMA_DIMENSIO);
+
+    let klipo = Rektangulo {
+        x: kani::any(),
+        y: kani::any(),
+        larĝo: kani::any(),
+        alto: kani::any(),
     };
+    let limoj = Limoj::el_surfaco(larĝo, alto).intersekci(Limoj::el_rektangulo(klipo));
     let rektangulo = Rektangulo {
         x: kani::any(),
         y: kani::any(),
@@ -44,10 +57,12 @@ fn klipo_restas_en_surfaco() {
         assert!(regiono.y0 < regiono.y1);
         assert!(regiono.y1 <= alto);
 
-        if paŝo >= larĝo {
-            let lasta = (u64::from(regiono.y1) - 1) * u64::from(paŝo) + (u64::from(regiono.x1) - 1);
-            let buĝeto = u64::from(paŝo) * u64::from(alto);
-            assert!(lasta < buĝeto);
-        }
+        // Sub la dimensia limo la indeksoj restas sub 2^32, do la u32-kalkulo
+        // kongruas kun la u64-indekso de `plenigi`; ĝi ankaŭ restas solvebla
+        // en la templimo de Q06.
+        assert!(regiono.x1 <= paŝo);
+        let lasta = (regiono.y1 - 1) * paŝo + (regiono.x1 - 1);
+        let buĝeto = paŝo * alto;
+        assert!(lasta < buĝeto);
     }
 }

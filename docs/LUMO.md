@@ -544,9 +544,11 @@ limoj estas en 16.16 fiksa komo kaj kalkuliĝas per `i64` (L23, R11). La loka
 pordego (`justfile`, `deny.toml`, `tools/versio.sh`, `tools/sen-glitkomo.sh`,
 `tools/sen-cina.sh`, `tools/haketi.sh`, `tools/pruvoj.sh`) kaj la DI-matrico
 estas en la deponejo. La du pruvoj estas `miksi_neniam_troas` (R07) kaj
-`klipo_restas_en_surfaco` (L15) en `docs/PRUVOJ.md`; la oraj haketoj
-`plena-ortangulo` kaj `klipita-ortangulo` estas registritaj en
-`docs/FIKSAĴOJ.md` kaj reproduktataj de `tools/haketi.sh --kontroli`.
+`klipo_restas_en_surfaco` (L15) en `docs/PRUVOJ.md`; ĉi tiu lasta limiĝas al
+`larĝo, alto, paŝo ≤ u16::MAX` kaj `paŝo ≥ larĝo` por resti en la templimo de
+Q06. La oraj haketoj `plena-ortangulo` kaj `klipita-ortangulo` estas
+registritaj en `docs/FIKSAĴOJ.md` kaj reproduktataj de
+`tools/haketi.sh --kontroli`.
 
 ### 10.2. Fazo 2 — 0.2.0 «Rondoj, maskoj, translokigo»
 
