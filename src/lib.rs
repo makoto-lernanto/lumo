@@ -35,12 +35,14 @@ mod kani_pruvoj;
 mod koloro;
 mod ordono;
 mod surfaco;
+mod tiparo;
 
 pub use desegnu::desegnu;
 pub use geometrio::Rektangulo;
 pub use koloro::Koloro;
 pub use ordono::Ordono;
 pub use surfaco::Surfaco;
+pub use tiparo::Tiparo;
 
 /// La versio de Lumo, legata el `Cargo.toml`.
 pub const VERSIO: &str = env!("CARGO_PKG_VERSION");

@@ -19,6 +19,12 @@ fiksoj=(
     "kadro-hela-normala"
     "kadro-hela-ŝveba"
     "kadro-hela-premata"
+    "titolo-malhela-normala"
+    "titolo-malhela-ŝveba"
+    "titolo-malhela-premata"
+    "titolo-hela-normala"
+    "titolo-hela-ŝveba"
+    "titolo-hela-premata"
 )
 modo="${1:---kontroli}"
 hodiau=$(date +%F)

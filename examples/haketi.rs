@@ -7,7 +7,7 @@
 
 use std::io::{self, Write};
 
-use lumo::{Koloro, Ordono, Rektangulo, Surfaco, desegnu};
+use lumo::{Koloro, Ordono, Rektangulo, Surfaco, Tiparo, desegnu};
 
 const LARĜO: u32 = 32;
 const ALTO: u32 = 24;
@@ -102,19 +102,21 @@ fn temo(hela: bool, stato: Stato) -> Temo {
     }
 }
 
-fn kadraj_ordonoj(nomo: &str) -> Option<Vec<Ordono<'static>>> {
+const TITOLO: &str = "FluoU";
+
+fn kadraj_ordonoj<'a>(nomo: &str, tiparo: Option<&'a Tiparo<'a>>) -> Option<Vec<Ordono<'a>>> {
     let (hela, stato) = match nomo {
-        "kadro-malhela-normala" => (false, Stato::Normala),
-        "kadro-malhela-ŝveba" => (false, Stato::Ŝveba),
-        "kadro-malhela-premata" => (false, Stato::Premata),
-        "kadro-hela-normala" => (true, Stato::Normala),
-        "kadro-hela-ŝveba" => (true, Stato::Ŝveba),
-        "kadro-hela-premata" => (true, Stato::Premata),
+        "kadro-malhela-normala" | "titolo-malhela-normala" => (false, Stato::Normala),
+        "kadro-malhela-ŝveba" | "titolo-malhela-ŝveba" => (false, Stato::Ŝveba),
+        "kadro-malhela-premata" | "titolo-malhela-premata" => (false, Stato::Premata),
+        "kadro-hela-normala" | "titolo-hela-normala" => (true, Stato::Normala),
+        "kadro-hela-ŝveba" | "titolo-hela-ŝveba" => (true, Stato::Ŝveba),
+        "kadro-hela-premata" | "titolo-hela-premata" => (true, Stato::Premata),
         _ => return None,
     };
     let t = temo(hela, stato);
 
-    let ordonoj = vec![
+    let mut ordonoj = vec![
         Ordono::Plenigi {
             rektangulo: Rektangulo::nova(0, 0, KADRA_LARĜO, KADRA_ALTO),
             koloro: t.fono,
@@ -171,10 +173,19 @@ fn kadraj_ordonoj(nomo: &str) -> Option<Vec<Ordono<'static>>> {
         Ordono::Maltranslokigo,
         Ordono::Malŝlipo,
     ];
+    if let Some(tiparo) = tiparo {
+        ordonoj.push(Ordono::Glifoj {
+            origino: 76,
+            bazo: 22,
+            koloro: t.ikono,
+            tiparo,
+            tekstero: TITOLO,
+        });
+    }
     Some(ordonoj)
 }
 
-fn ordonoj(nomo: &str) -> Vec<Ordono<'static>> {
+fn ordonoj<'a>(nomo: &str, tiparo: Option<&'a Tiparo<'a>>) -> Vec<Ordono<'a>> {
     let fono = koloro(255, 10, 20, 30);
     let emfazo = koloro(255, 200, 120, 60);
     let plena = Rektangulo::nova(0, 0, LARĜO, ALTO);
@@ -204,7 +215,7 @@ fn ordonoj(nomo: &str) -> Vec<Ordono<'static>> {
             },
             Ordono::Malŝlipo,
         ],
-        _ => match kadraj_ordonoj(nomo) {
+        _ => match kadraj_ordonoj(nomo, tiparo) {
             Some(ordonoj) => ordonoj,
             None => {
                 eprintln!("nekonata fiksaĵo: {nomo}");
@@ -215,7 +226,7 @@ fn ordonoj(nomo: &str) -> Vec<Ordono<'static>> {
 }
 
 fn dimensioj(nomo: &str) -> (u32, u32, u32) {
-    if nomo.starts_with("kadro-") {
+    if nomo.starts_with("kadro-") || nomo.starts_with("titolo-") {
         (KADRA_LARĜO, KADRA_ALTO, KADRA_PAŜO)
     } else {
         (LARĜO, ALTO, PAŜO)
@@ -224,16 +235,27 @@ fn dimensioj(nomo: &str) -> (u32, u32, u32) {
 
 fn main() {
     let nomo = std::env::args().nth(1).unwrap_or_else(|| {
-        eprintln!("uzo: haketi <plena-ortangulo|klipita-ortangulo|kadro-*>");
+        eprintln!("uzo: haketi <plena-ortangulo|klipita-ortangulo|kadro-*|titolo-*>");
         std::process::exit(2);
     });
+
+    let datumoj = nomo.starts_with("titolo-").then(|| {
+        std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fiksaĵoj/tiparo-12x24.bin"
+        ))
+        .expect("tipara fiksaĵo")
+    });
+    let tiparo = datumoj
+        .as_deref()
+        .map(|datumoj| Tiparo::nova(12, 24, 18, datumoj).expect("valida tiparo"));
 
     let (larĝo, alto, paŝo) = dimensioj(&nomo);
     let mut bufro = vec![0u32; (paŝo * alto) as usize];
     {
         let mut surfaco =
             Surfaco::nova(&mut bufro, larĝo, alto, paŝo).expect("valida geometrio de surfaco");
-        desegnu(&mut surfaco, &ordonoj(&nomo));
+        desegnu(&mut surfaco, &ordonoj(&nomo, tiparo.as_ref()));
     }
 
     let mut eligo = Vec::with_capacity((larĝo * alto * 4) as usize);

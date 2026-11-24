@@ -1,10 +1,11 @@
 [package]
 name = "lumo"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 rust-version = "1.100"
 license = "MIT"
 description = "Pura Rust-rastrumilo por la grafika interfaco FluoU"
+exclude = ["tests/fiksaĵoj/", "third_party/"]
 
 [lib]
 path = "src/lib.rs"

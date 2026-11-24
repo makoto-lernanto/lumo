@@ -2,10 +2,10 @@
 
 Pura Rust-rastrumilo por la grafika interfaco FluoU de MiKerno kaj Horizonto.
 
-> Stato: 0.2.0 — Fazo 2 (rondoj, maskoj, translokigo) preta; la deviga normo
-> estas [docs/LUMO.md](docs/LUMO.md).
+> Stato: 0.3.0 — Fazo 3 (bitmAPA teksto) preta; la deviga normo estas
+> [docs/LUMO.md](docs/LUMO.md).
 >
-> **Versio:** 0.2.0
+> **Versio:** 0.3.0
 
 ## Kio estas Lumo
 
@@ -33,7 +33,9 @@ aritmetiko.
 | `docs/PRUVOJ.md` | la pruvokatalogo (`#[kani::proof]`) |
 | `docs/FIKSAĴOJ.md` | la oraj haketoj kaj ilia historio |
 | `docs/RENDIMENTO.md` | la mezuroj de la kanonika vojo |
-| `src/` | `Surfaco`, `Koloro`, `Rektangulo`, `Ordono` kaj `desegnu` |
+| `src/` | `Surfaco`, `Koloro`, `Rektangulo`, `Tiparo`, `Ordono` kaj `desegnu` |
+| `tests/fiksaĵoj/` | la bitmapaj tiparoj de MiKerno (nur por testoj) |
+| `third_party/` | la DejaVu-licenco de la tiparaj datumoj |
 | `justfile`, `deny.toml`, `tools/` | la loka kvalita pordego |
 | `.github/workflows/di.yml` | la DI-matrico (Kani po unu pruvo) |
 | `Cargo.toml` | pako kaj eldono |

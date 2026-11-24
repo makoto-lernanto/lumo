@@ -1,7 +1,8 @@
 //! La desegna vojo: klipo, kunfandado, ortangula plenigo, rondoj, maskoj kaj
 //! translokigo.
 
-use crate::{Koloro, Ordono, Rektangulo, Surfaco};
+use crate::tiparo::indekso;
+use crate::{Koloro, Ordono, Rektangulo, Surfaco, Tiparo};
 
 const MAKSIMUMAJ_ORDONOJ: usize = 256;
 const MAKSIMUMA_KLIPA_PROFUNDO: usize = 8;
@@ -368,6 +369,65 @@ fn apliki_maskon(
     }
 }
 
+fn skribi_glifojn(
+    surfaco: &mut Surfaco<'_>,
+    klipo: Limoj,
+    pozicio: (i32, i32),
+    koloro: Koloro,
+    tiparo: &Tiparo<'_>,
+    tekstero: &str,
+    translokigo: (i64, i64),
+) {
+    // L17: travidebla koloro ne efikas.
+    if koloro.alfa() == 0 {
+        return;
+    }
+    let (dx, dy) = translokigo;
+    let larĝo = i64::from(tiparo.larĝo());
+    let alto = i64::from(tiparo.alto());
+    let paŝo = tiparo.paŝo() as usize;
+    let mut x = i64::from(pozicio.0) + dx;
+    let supro = i64::from(pozicio.1) - i64::from(tiparo.baza_linio()) + dy;
+
+    for signo in tekstero.chars() {
+        if let Some(indekso) = indekso(signo) {
+            let geometrio = Limoj {
+                x0: x * FIKSITA_BAZO,
+                y0: supro * FIKSITA_BAZO,
+                x1: (x + larĝo) * FIKSITA_BAZO,
+                y1: (supro + alto) * FIKSITA_BAZO,
+            };
+            if let Some(regiono) =
+                videbla_regiono(surfaco.larĝo(), surfaco.alto(), klipo, geometrio)
+            {
+                let glifa_datumoj = tiparo.glifo(indekso);
+                for y in regiono.y0..regiono.y1 {
+                    let Some(vico) = vico_mut(surfaco, y) else {
+                        break;
+                    };
+                    let Ok(glifa_y) = usize::try_from(i64::from(y) - supro) else {
+                        continue;
+                    };
+                    let glifa_vico = &glifa_datumoj[glifa_y * paŝo..(glifa_y + 1) * paŝo];
+                    for x_pikselo in regiono.x0..regiono.x1 {
+                        let Ok(glifa_x) = usize::try_from(i64::from(x_pikselo) - x) else {
+                            continue;
+                        };
+                        if glifa_vico[glifa_x / 8] & (0x80 >> (glifa_x % 8)) == 0 {
+                            continue;
+                        }
+                        let piksela_indekso = x_pikselo as usize;
+                        let celo = vico[piksela_indekso];
+                        vico[piksela_indekso] = miksi_pikselon(koloro, celo, 255);
+                    }
+                }
+            }
+        }
+        // T03: mankanta glifo avancas sen desegni; T06: sen interlitera spaco.
+        x += larĝo;
+    }
+}
+
 /// Faru la ordonaron sur la surfaco.
 ///
 /// La ordonoj plenumiĝas en la donita ordo (L20); la klipo kaj la translokigo
@@ -466,6 +526,23 @@ pub fn desegnu(surfaco: &mut Surfaco<'_>, ordonoj: &[Ordono<'_>]) {
                     translokigo = translokiga_stako[translokiga_profundo];
                 }
             }
+            Ordono::Glifoj {
+                origino,
+                bazo,
+                koloro,
+                tiparo,
+                tekstero,
+            } => {
+                skribi_glifojn(
+                    surfaco,
+                    klipo,
+                    (origino, bazo),
+                    koloro,
+                    tiparo,
+                    tekstero,
+                    translokigo,
+                );
+            }
         }
     }
 }
@@ -474,9 +551,9 @@ pub fn desegnu(surfaco: &mut Surfaco<'_>, ordonoj: &[Ordono<'_>]) {
 mod testoj {
     use super::{
         FIKSITA_BAZO, Limoj, SPECIMENAJ_CENTROJ, desegnu, kovrado_el_specimenoj, miksi_kanalojn,
-        specimeno_en_ronda, videbla_regiono,
+        miksi_pikselon, specimeno_en_ronda, videbla_regiono,
     };
-    use crate::{Koloro, Ordono, Rektangulo, Surfaco};
+    use crate::{Koloro, Ordono, Rektangulo, Surfaco, Tiparo};
 
     const RUĜA: u32 = 0xFFC8_6432;
     const VERDA: u32 = 0xFF32_64C8;
@@ -1326,5 +1403,205 @@ mod testoj {
                 }
             }
         }
+    }
+
+    /// 2 × 2 testa tiparo: `A` kovras la maldekstran supran pikselon kaj la
+    /// du malsuprajn; `baza_linio = 1`.
+    fn testa_tiparo(datumoj: &mut [u8; 234]) -> Tiparo<'_> {
+        let glifo = 33 * 2;
+        datumoj[glifo] = 0b1000_0000;
+        datumoj[glifo + 1] = 0b1100_0000;
+        Tiparo::nova(2, 2, 1, datumoj).unwrap()
+    }
+
+    fn glifoj<'a>(
+        origino: i32,
+        bazo: i32,
+        koloro: Koloro,
+        tiparo: &'a Tiparo<'a>,
+        tekstero: &'a str,
+    ) -> Ordono<'a> {
+        Ordono::Glifoj {
+            origino,
+            bazo,
+            koloro,
+            tiparo,
+            tekstero,
+        }
+    }
+
+    #[test]
+    fn glifoj_kovras_kaj_avancas_laŭ_la_tiparo() {
+        let mut datumoj = [0u8; 234];
+        let tiparo = testa_tiparo(&mut datumoj);
+        let koloro = koloro(255, 200, 100, 50);
+        let mut bufro = [0u32; 16];
+        {
+            let mut surfaco = Surfaco::nova(&mut bufro, 4, 4, 4).unwrap();
+            desegnu(&mut surfaco, &[glifoj(0, 2, koloro, &tiparo, "AA")]);
+        }
+        let emfazo = paka(255, 200, 100, 50);
+        for y in 0..4usize {
+            for x in 0..4usize {
+                let atendu = match (x, y) {
+                    (0, 1) | (2, 1) | (0, 2) | (1, 2) | (2, 2) | (3, 2) => emfazo,
+                    _ => 0,
+                };
+                assert_eq!(bufro[y * 4 + x], atendu, "pikselo ({x}, {y})");
+            }
+        }
+    }
+
+    #[test]
+    fn glifoj_respektas_bazlinion_kaj_negativan_supron() {
+        let mut datumoj = [0u8; 234];
+        let tiparo = testa_tiparo(&mut datumoj);
+        let koloro = koloro(255, 200, 100, 50);
+        let mut bufro = [0u32; 4];
+        {
+            let mut surfaco = Surfaco::nova(&mut bufro, 2, 2, 2).unwrap();
+            // bazo 0, baza linio 1 → la supra glifa vico estas je y = -1.
+            desegnu(&mut surfaco, &[glifoj(0, 0, koloro, &tiparo, "A")]);
+        }
+        assert_eq!(
+            bufro,
+            [paka(255, 200, 100, 50), paka(255, 200, 100, 50), 0, 0]
+        );
+    }
+
+    #[test]
+    fn mankanta_glifo_avancas_sen_desegni() {
+        let mut datumoj = [0u8; 234];
+        let tiparo = testa_tiparo(&mut datumoj);
+        let koloro = koloro(255, 200, 100, 50);
+        let mut kun_mankanta = [0u32; 32];
+        let mut kun_spaco = [0u32; 32];
+        {
+            let mut surfaco = Surfaco::nova(&mut kun_mankanta, 8, 4, 8).unwrap();
+            desegnu(&mut surfaco, &[glifoj(0, 1, koloro, &tiparo, "AéA")]);
+        }
+        {
+            let mut surfaco = Surfaco::nova(&mut kun_spaco, 8, 4, 8).unwrap();
+            desegnu(&mut surfaco, &[glifoj(0, 1, koloro, &tiparo, "A A")]);
+        }
+        assert_eq!(kun_mankanta, kun_spaco);
+
+        let mut nur_mankanta = [0u32; 8];
+        {
+            let mut surfaco = Surfaco::nova(&mut nur_mankanta, 4, 2, 4).unwrap();
+            desegnu(&mut surfaco, &[glifoj(0, 1, koloro, &tiparo, "é")]);
+        }
+        assert_eq!(nur_mankanta, [0u32; 8]);
+    }
+
+    #[test]
+    fn glifoj_respektas_la_klipon_kaj_avancas_ekster_ĝi() {
+        let mut datumoj = [0u8; 234];
+        let tiparo = testa_tiparo(&mut datumoj);
+        let koloro = koloro(255, 200, 100, 50);
+        let mut bufro = [0u32; 8];
+        {
+            let mut surfaco = Surfaco::nova(&mut bufro, 4, 2, 4).unwrap();
+            desegnu(
+                &mut surfaco,
+                &[
+                    Ordono::Klipo {
+                        rektangulo: Rektangulo::nova(2, 0, 2, 2),
+                    },
+                    glifoj(0, 1, koloro, &tiparo, "AA"),
+                ],
+            );
+        }
+        // La unua glifo estas tute klipita, sed la dua avancas al x = 2.
+        assert_eq!(
+            bufro,
+            [
+                0,
+                0,
+                paka(255, 200, 100, 50),
+                0,
+                0,
+                0,
+                paka(255, 200, 100, 50),
+                paka(255, 200, 100, 50),
+            ]
+        );
+    }
+
+    #[test]
+    fn glifoj_translokigitaj_kaj_restarigitaj() {
+        let mut datumoj = [0u8; 234];
+        let tiparo = testa_tiparo(&mut datumoj);
+        let koloro = koloro(255, 200, 100, 50);
+        let emfazo = paka(255, 200, 100, 50);
+        let mut bufro = [0u32; 18];
+        {
+            let mut surfaco = Surfaco::nova(&mut bufro, 6, 3, 6).unwrap();
+            desegnu(
+                &mut surfaco,
+                &[
+                    Ordono::Translokigo { dx: 2, dy: 0 },
+                    glifoj(0, 1, koloro, &tiparo, "A"),
+                    Ordono::Maltranslokigo,
+                    glifoj(0, 1, koloro, &tiparo, "A"),
+                ],
+            );
+        }
+        for y in 0..3usize {
+            for x in 0..6usize {
+                let atendu = match (x, y) {
+                    (0, 0) | (0, 1) | (1, 1) | (2, 0) | (2, 1) | (3, 1) => emfazo,
+                    _ => 0,
+                };
+                assert_eq!(bufro[y * 6 + x], atendu, "pikselo ({x}, {y})");
+            }
+        }
+    }
+
+    #[test]
+    fn glifoj_kunfandas_kiel_ĉiu_koloro() {
+        let mut datumoj = [0u8; 234];
+        let tiparo = testa_tiparo(&mut datumoj);
+        let fono = koloro(255, 10, 20, 30);
+        let emfazo = koloro(128, 100, 50, 25);
+        let mut bufro = [0u32; 4];
+        {
+            let mut surfaco = Surfaco::nova(&mut bufro, 2, 2, 2).unwrap();
+            desegnu(
+                &mut surfaco,
+                &[
+                    Ordono::Plenigi {
+                        rektangulo: plena(2, 2),
+                        koloro: fono,
+                    },
+                    glifoj(0, 1, emfazo, &tiparo, "A"),
+                ],
+            );
+        }
+        let fona = paka(255, 10, 20, 30);
+        let miksita = miksi_pikselon(emfazo, fona, 255);
+        assert_eq!(bufro, [miksita, fona, miksita, miksita]);
+    }
+
+    #[test]
+    fn glifoj_legas_vicojn_per_la_ĝusta_paŝo() {
+        // Larĝo 9 → paŝo 2; la dua bajto de la vico enhavas la pikselon x = 8.
+        let mut datumoj = [0u8; 234];
+        let glifo = 33 * 2;
+        datumoj[glifo] = 0b1000_0000;
+        datumoj[glifo + 1] = 0b1000_0000;
+        let tiparo = Tiparo::nova(9, 1, 0, &datumoj).unwrap();
+        let mut bufro = [0u32; 9];
+        {
+            let mut surfaco = Surfaco::nova(&mut bufro, 9, 1, 9).unwrap();
+            desegnu(
+                &mut surfaco,
+                &[glifoj(0, 0, koloro(255, 1, 2, 3), &tiparo, "A")],
+            );
+        }
+        let mut atendu = [0u32; 9];
+        atendu[0] = paka(255, 1, 2, 3);
+        atendu[8] = paka(255, 1, 2, 3);
+        assert_eq!(bufro, atendu);
     }
 }

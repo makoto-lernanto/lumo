@@ -1,8 +1,8 @@
 # Lumo — normiga gvidilo pri la rastrumilo de FluoU
 
-> Stato: 2026-11-22 · Fazo 2 preta · celo 1.0 · MIT
+> Stato: 2026-11-24 · Fazo 3 preta · celo 1.0 · MIT
 >
-> **Versio:** 0.2.0
+> **Versio:** 0.3.0
 >
 > Ĉi tiu dokumento estas la deviga normo de Lumo, la sola rastrumilo
 > permesata por FluoU. Ĝi difinas la limojn, la objektojn, la rastrumadon,
@@ -272,8 +272,9 @@ Lumo 0.1–1.0 subtenas nur **bitmapajn tiparojn**: 1-bita glifoj, kovrado
 - **T05.** Teksto `DEVI` esti desegnata tra la sama kunfandada formulo (R07)
   kiel ĉiu alia koloro.
 - **T06.** `bazo` estas la y-koordinato de la baza linio; la supro de la
-  glifa ĉelo estas `bazo − baza_linio`. Antaŭeniro estas la glifa larĝo, sen
-  interlitera spaco en 1.0.
+  glifa ĉelo estas `bazo − baza_linio`. `origino` estas la x-koordinato de la
+  unua glifa ĉelo. Antaŭeniro estas la glifa larĝo, sen interlitera spaco en
+  1.0.
 - **T07.** Skalaj tiparoj (TrueType, OpenType) ne estas parto de 1.0. Estonta
   aparta tavolo produktos kovradajn maskojn; Lumo restos rastrumilo de
   maskoj kaj glifaj ĉeloj.
@@ -482,8 +483,8 @@ la malĉefan numeron; la lasta estas `1.0.0`.
 
 La detaloj, la evitindaj eraroj kaj la akceptkriterioj estas en §10.
 
-**Stato de la efektivigo (2026-11-22).** Fazo 1 (`0.1.0`) kaj Fazo 2
-(`0.2.0`) estas pretaj; la ceteraj fazoj restas planitaj.
+**Stato de la efektivigo (2026-11-24).** Fazo 1 (`0.1.0`), Fazo 2 (`0.2.0`)
+kaj Fazo 3 (`0.3.0`) estas pretaj; la ceteraj fazoj restas planitaj.
 
 ---
 
@@ -654,6 +655,17 @@ MiKerno, sen `alloc` kaj sen tipara kaŝmemoro.
    mankanta signo avancas sen skribo.
 4. Testoj por `bazo`, `baza_linio` kaj antaŭeniro kun konataj koordinatoj.
 5. Neniu `alloc`, glitkomo aŭ `unsafe` en `src/`.
+
+**Stato (2026-11-24).** Efektivigitaj: `Tiparo` kun la MiKerno-formato (117
+glifoj, `paŝo = (larĝo + 7) / 8`, baza linio) kaj la Esperanta indeksa tabelo;
+`Ordono::Glifoj` kun `origino` (x), `bazo`, `koloro`, `tiparo` kaj `tekstero`;
+mankanta glifo avancas sen desegni (T03); la kovrado estas `0` aŭ `255` (R03)
+kaj la kunfandado estas la normiga (T05). La realaj tiparoj 8 × 16 kaj 12 × 24
+estas en `tests/fiksaĵoj/` (kun `third_party/dejavu/LICENSE.txt`) kaj nur la
+testoj kaj la haketilo ilin legas. La ses titolstriaj haketoj `titolo-*` estas
+registritaj en `docs/FIKSAĴOJ.md`; la `kadro-*` haketoj de Fazo 2 restas
+senŝanĝaj. La nova pruvo `glifo_indekso_en_limoj` (T01–T02) estas en
+`docs/PRUVOJ.md` kaj en la DI-matrico.
 
 ### 10.4. Fazo 4 — 0.4.0 «Damaĝo»
 
@@ -941,3 +953,4 @@ La jenaj temoj estas ekster la frostigo kaj bezonas apartajn dokumentojn:
 | 2026-11-21 | Aldonitaj la kvalita konstitucio (§8) kaj la naŭ detalaj fazoj (§10); maskoj kaj translokigo en §3.3; kovrado 8 × 8 ekde 0.6; TrueType movita al post-1.0 (T07) |
 | 2026-11-22 | Fazo 1 efektivigita (0.1.0): `Surfaco`, `Koloro`, `Rektangulo`, `Ordono` kaj `desegnu`; la loka pordego kaj la DI-matrico; la du Kani-pruvoj kaj la oraj haketoj |
 | 2026-11-22 | Fazo 2 efektivigita (0.2.0): `RondaRekto` kun 4 × 4 superprovado, `Masko`, `Translokigo`/`Maltranslokigo`; ses kadraj haketoj, la pruvo `rondigo_kovrado_en_limoj` kaj `docs/RENDIMENTO.md` |
+| 2026-11-24 | Fazo 3 efektivigita (0.3.0): `Tiparo`, `Ordono::Glifoj`, la tiparaj fiksaĵoj de MiKerno, ses titolaj haketoj kaj la pruvo `glifo_indekso_en_limoj` |

@@ -2,6 +2,7 @@
 
 use crate::desegnu::{Limoj, kovrado_el_specimenoj, miksi_kanalojn, videbla_regiono};
 use crate::geometrio::Rektangulo;
+use crate::tiparo::{GLIFOJ, indekso};
 
 /// R07: kun premultiplika fonto la kunfandita rezulto neniam troas 255.
 #[kani::proof]
@@ -57,4 +58,13 @@ fn klipo_restas_en_surfaco() {
 fn rondigo_kovrado_en_limoj() {
     let specimenoj: [bool; 16] = kani::any();
     assert!(kovrado_el_specimenoj(specimenoj) <= 255);
+}
+
+/// T01–T02: ĉiu signo, kiun la tiparo rekonas, ricevas indekson sub 117.
+#[kani::proof]
+fn glifo_indekso_en_limoj() {
+    let signo: char = kani::any();
+    if let Some(indekso) = indekso(signo) {
+        assert!(indekso < GLIFOJ);
+    }
 }

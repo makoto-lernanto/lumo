@@ -1,12 +1,13 @@
 //! Ordono: la sola enigo de la rastrumilo.
 
-use crate::{Koloro, Rektangulo};
+use crate::{Koloro, Rektangulo, Tiparo};
 
 /// Unu ordono en la ordonaro.
 ///
 /// La enumo estas `#[non_exhaustive]`, por ke novaj variantoj ne rompu
-/// eksterajn `match`-ojn. `kovradoj` de `Masko` estas pruntita datumaro de la
-/// alvokanto; pro tio la enumo havas vivodaŭron.
+/// eksterajn `match`-ojn. `kovradoj` de `Masko` kaj `tiparo`/`tekstero` de
+/// `Glifoj` estas pruntitaj datumoj de la alvokanto; pro tio la enumo havas
+/// vivodaŭron.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[non_exhaustive]
 pub enum Ordono<'a> {
@@ -62,4 +63,20 @@ pub enum Ordono<'a> {
     },
     /// Restarigu ekzakte la antaŭan translokigon.
     Maltranslokigo,
+    /// Desegnu bitmape teksteton per alvokanto-provizita tiparo.
+    ///
+    /// La kovrado de ĉiu glifa pikselo estas `0` aŭ `255` (R03). Signo, kiun
+    /// la tiparo ne enhavas, avancas sen desegni (T03).
+    Glifoj {
+        /// La x-koordinato de la unua glifa ĉelo en aparat-pikseloj.
+        origino: i32,
+        /// La y-koordinato de la baza linio (T06).
+        bazo: i32,
+        /// La antaŭmultiplika koloro de la glifoj.
+        koloro: Koloro,
+        /// La bitmapa tiparo de la alvokanto.
+        tiparo: &'a Tiparo<'a>,
+        /// La tekstero; ĉiu signo avancas je la glifa larĝo.
+        tekstero: &'a str,
+    },
 }
