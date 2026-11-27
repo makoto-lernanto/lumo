@@ -2,8 +2,8 @@
 
 Pura Rust-rastrumilo por la grafika interfaco FluoU de MiKerno kaj Horizonto.
 
-> Stato: 0.3.0 — Fazo 3 (bitmAPA teksto) preta; la deviga normo estas
-> [docs/LUMO.md](docs/LUMO.md).
+> Stato: 0.3.0 — Fazo 3 preta, Fazo 4 (damaĝo) komencita; la deviga normo
+> estas [docs/LUMO.md](docs/LUMO.md).
 >
 > **Versio:** 0.3.0
 
@@ -33,7 +33,7 @@ aritmetiko.
 | `docs/PRUVOJ.md` | la pruvokatalogo (`#[kani::proof]`) |
 | `docs/FIKSAĴOJ.md` | la oraj haketoj kaj ilia historio |
 | `docs/RENDIMENTO.md` | la mezuroj de la kanonika vojo |
-| `src/` | `Surfaco`, `Koloro`, `Rektangulo`, `Tiparo`, `Ordono` kaj `desegnu` |
+| `src/` | `Surfaco`, `Koloro`, `Rektangulo`, `Tiparo`, `Ordono`, `Damaĝo` kaj `desegnu` |
 | `tests/fiksaĵoj/` | la bitmapaj tiparoj de MiKerno (nur por testoj) |
 | `third_party/` | la DejaVu-licenco de la tiparaj datumoj |
 | `justfile`, `deny.toml`, `tools/` | la loka kvalita pordego |
@@ -51,6 +51,10 @@ spegulas la pordegon de MiKerno (`../mikerno/docs/MEJLOSTONOJ.md` §9.1–§9.3
 kaj §4.7–§4.8): loka `just kontroli` sen Kani, matrica `kani-kontroli` en DI
 (unu pruvo po tasko, templimoj, artefaktoj), Miri, `cargo deny`, malpermeso
 de senbaza `#[allow]` kaj piksela paritateco inter `x86_64` kaj `arm64`.
+
+La laborfluo kun GitHub Copilot estas difinita en
+[docs/LUMO.md §8.6](docs/LUMO.md#kunlaboro-kun-github-copilot): la uzanto
+elektas la Fazon kaj aprobas ŝanĝojn de la specifo aŭ la pordego.
 
 Loke oni neniam rulas `cargo kani` (WSL2 elĉerpiĝas je memoro).
 

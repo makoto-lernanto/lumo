@@ -28,6 +28,7 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
+mod damago;
 mod desegnu;
 mod geometrio;
 #[cfg(kani)]
@@ -37,7 +38,8 @@ mod ordono;
 mod surfaco;
 mod tiparo;
 
-pub use desegnu::desegnu;
+pub use damago::Damaĝo;
+pub use desegnu::{desegnu, desegnu_damagon};
 pub use geometrio::Rektangulo;
 pub use koloro::Koloro;
 pub use ordono::Ordono;

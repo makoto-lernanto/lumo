@@ -1,6 +1,6 @@
 # Lumo — normiga gvidilo pri la rastrumilo de FluoU
 
-> Stato: 2026-11-24 · Fazo 3 preta · celo 1.0 · MIT
+> Stato: 2026-11-26 · Fazo 3 preta, Fazo 4 komencita · celo 1.0 · MIT
 >
 > **Versio:** 0.3.0
 >
@@ -462,6 +462,26 @@ malŝaltas la kontrolon.
 3. Ĝisdatigu la version, `docs/LUMO.md` kaj la akceptan protokolon.
 4. Raportu la rezulton kaj haltu; atendu pluajn instrukciojn.
 
+#### Kunlaboro kun GitHub Copilot
+
+GitHub Copilot estas helpilo por efektivigi la petitan laboron; ĝi ne
+anstataŭas la normon aŭ la decidon de la uzanto.
+
+1. Antaŭ ŝanĝo, Copilot `DEVI` legi ĉi tiun normon kaj la rekte rilatajn
+   dokumentojn, testojn kaj ekzistantajn efektivigojn.
+2. Copilot `DEVI` sekvi la amplekson kaj la akceptkriteriojn de la Fazo
+   elektita de la uzanto, konservi la Esperantan nomadon kaj fari nur
+   necesajn ŝanĝojn.
+3. Decidoj, kiuj ŝanĝas la specifon, bildajn haketojn, pordegon, dependaĵojn
+   aŭ la amplekson de la Fazo, postulas antaŭan aprobon de la uzanto.
+   Copilot `DEVI NE` inventi tian aprobon aŭ silente malfortigi kontrolon.
+4. Copilot `DEVI` ruli `just kontroli`, konservi ĝian realan eligon kaj
+   raporti ankaŭ la neplenumeblajn DI-kontrolojn; ĝi `DEVI NE` ruli Kani
+   loke (Q02).
+5. Post la Difino de preta, Copilot `DEVI` raporti la ŝanĝojn, kontrolojn kaj
+   restantajn blokojn, poste halti antaŭ la sekva Fazo. Komito kaj sendo
+   postulas apartan permeson (Q11).
+
 ---
 
 ## 9. Fazoj — superrigardo
@@ -483,8 +503,9 @@ la malĉefan numeron; la lasta estas `1.0.0`.
 
 La detaloj, la evitindaj eraroj kaj la akceptkriterioj estas en §10.
 
-**Stato de la efektivigo (2026-11-24).** Fazo 1 (`0.1.0`), Fazo 2 (`0.2.0`)
-kaj Fazo 3 (`0.3.0`) estas pretaj; la ceteraj fazoj restas planitaj.
+**Stato de la efektivigo (2026-11-26).** Fazoj 1–3 estas pretaj. Fazo 4
+(`0.4.0`, damaĝo) estas komencita; la nuna versio restas `0.3.0` ĝis la
+Difino de preta de §8.4 estas plenumita.
 
 ---
 
@@ -707,6 +728,17 @@ por ke ĝi kopiu al la frambufo nur la necesan regionon.
 5. Ĉiuj haketoj de Fazo 3 restas senŝanĝaj (damaĝo ne rajtas ŝanĝi bildon).
 6. Rendimenta buĝeto: la damaĝa kalkulo ne pli ol 10 % pli malrapidas ol la
    baza desegno por la fiksaĵoj.
+
+La publika `Damaĝo` havas fiksan kapaciton de 16 ortanguloj. `nova` kreas
+malplenan liston; `aldoni` kunfandas interkovrantajn kaj apudajn
+ortangulojn; `rektanguloj` kaj `plena` elmontras la rezulton.
+`desegnu_damagon` akumulas la regionojn, kies pikseloj efektive ŝanĝiĝis.
+Ĉe saturiĝo ĝi konservative markas la tutan surfacon kaj starigas `plena`.
+
+**Stato (2026-11-26).** La publika API, la determinita du-surfaca testo,
+la Kani-pruvo kaj la rendimenta mezuro estas aldonitaj. `just kontroli`,
+Miri kaj `cargo deny check` estas verdaj; la Kani-matrico ankoraŭ devas
+validi en DI, do Fazo 4 restas komencita kaj la versio ne estas pliigita.
 
 ### 10.5. Fazo 5 — 0.5.0 «Paritateco kaj plena pordego»
 
@@ -954,3 +986,4 @@ La jenaj temoj estas ekster la frostigo kaj bezonas apartajn dokumentojn:
 | 2026-11-22 | Fazo 1 efektivigita (0.1.0): `Surfaco`, `Koloro`, `Rektangulo`, `Ordono` kaj `desegnu`; la loka pordego kaj la DI-matrico; la du Kani-pruvoj kaj la oraj haketoj |
 | 2026-11-22 | Fazo 2 efektivigita (0.2.0): `RondaRekto` kun 4 × 4 superprovado, `Masko`, `Translokigo`/`Maltranslokigo`; ses kadraj haketoj, la pruvo `rondigo_kovrado_en_limoj` kaj `docs/RENDIMENTO.md` |
 | 2026-11-24 | Fazo 3 efektivigita (0.3.0): `Tiparo`, `Ordono::Glifoj`, la tiparaj fiksaĵoj de MiKerno, ses titolaj haketoj kaj la pruvo `glifo_indekso_en_limoj` |
+| 2026-11-26 | Aldonita la kunlaborprocedo kun GitHub Copilot; komencita Fazo 4: `Damaĝo` kaj `desegnu_damagon` |

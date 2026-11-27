@@ -42,11 +42,30 @@ ol `Plenigi`, ĉar ĝi superprovadas nur la angulajn regionojn (4 × 4 specimeno
 po angula pikselo) kaj traktas la ceterajn pikselojn per la rapida vojo de
 `Plenigi`.
 
+## Buĝeto de damaĝo (2026-11-26, Lumo 0.3.0)
+
+La Fazo 4-buĝeto komparas la saman ordonaron per `desegnu` kaj
+`desegnu_damagon` sur 1024 × 768. La bufro estas restarigita antaŭ ĉiu
+mezurado, por ke ambaŭ vojoj skribu la saman bildon. Ĉiu rezulto estas la
+mezo de 20 mezuroj post tri varmigoj; la kvar ruloj estas apartaj lanĉoj de
+`cargo run --release --example rendimento`.
+
+| Ordonaro | Bazaj ruloj (µs) | Kun damaĝo (µs) | Mediano baza | Mediano kun damaĝo |
+| --- | --- | --- | --- | --- |
+| `Plenigi` | 6500, 7167, 7816, 8305 | 6132, 6836, 7583, 8284 | ≈ 7,5 ms | ≈ 7,2 ms |
+| `RondaRekto` (radiuso 32) | 10773, 17132, 19155, 14995 | 10952, 16355, 18694, 15913 | ≈ 16,1 ms | ≈ 16,1 ms |
+
+La plej granda malrapidiĝo inter la parigitaj mezuroj estis 6,2 % por
+`RondaRekto`, sub la Fazo 4-limo de 10 %. La WSL2-planilo kaŭzas rimarkindan
+disvastiĝon; ĉi tiuj nombroj estas referenco, ne aparta pordego.
+
 ## Interpretado
 
 - La normiga kunfandado (R07–R08) kaj la klipo (R10) estas la samaj por ambaŭ
   ordonoj; la diferenco estas la kovrada kalkulo.
 - La mezuroj estas por la skalara vojo. Fazo 6 rajtas optimumigi ĝin, sed nur
   se la oraj haketoj kaj la piksela paritateco restas senŝanĝaj (Q01, D02–D03).
+- La mezuro de Fazo 4 komparas la bazan desegnon kaj la kolektadon de damaĝo;
+  la buĝeto estas maksimume 10 % da malrapidiĝo por la mezuritaj ordonaroj.
 - La buĝeto estos fiksita en Fazo 6 surbaze de ĉi tiuj nombroj, sur la sama
   aparataro aŭ sur pli forta, kun la sama metodo.

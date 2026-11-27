@@ -2,7 +2,7 @@
 //! translokigo.
 
 use crate::tiparo::indekso;
-use crate::{Koloro, Ordono, Rektangulo, Surfaco, Tiparo};
+use crate::{Damaĝo, Koloro, Ordono, Rektangulo, Surfaco, Tiparo};
 
 const MAKSIMUMAJ_ORDONOJ: usize = 256;
 const MAKSIMUMA_KLIPA_PROFUNDO: usize = 8;
@@ -109,6 +109,55 @@ pub(crate) fn videbla_regiono(
         return None;
     }
     Some(Regiono { x0, y0, x1, y1 })
+}
+
+fn registri_vicon(regiono: &mut Option<Regiono>, x0: u32, x1: u32, y: u32) {
+    match regiono {
+        Some(regiono) => {
+            regiono.x0 = regiono.x0.min(x0);
+            regiono.y0 = regiono.y0.min(y);
+            regiono.x1 = regiono.x1.max(x1);
+            regiono.y1 = regiono.y1.max(y + 1);
+        }
+        None => {
+            *regiono = Some(Regiono {
+                x0,
+                y0: y,
+                x1,
+                y1: y + 1,
+            });
+        }
+    }
+}
+
+fn regiono_al_rektangulo(regiono: Regiono) -> Option<Rektangulo> {
+    Some(Rektangulo::nova(
+        i32::try_from(regiono.x0).ok()?,
+        i32::try_from(regiono.y0).ok()?,
+        regiono.x1 - regiono.x0,
+        regiono.y1 - regiono.y0,
+    ))
+}
+
+fn registri_damagon(
+    damaĝo: Option<&mut Damaĝo>,
+    regiono: Option<Regiono>,
+    surfaca_larĝo: u32,
+    surfaca_alto: u32,
+) {
+    let Some(damaĝo) = damaĝo else {
+        return;
+    };
+    if let Some(regiono) = regiono {
+        if let Some(rektangulo) = regiono_al_rektangulo(regiono) {
+            damaĝo.aldoni(rektangulo);
+        } else {
+            damaĝo.plenigi_per_surfaco(surfaca_larĝo, surfaca_alto);
+        }
+    }
+    if damaĝo.plena() {
+        damaĝo.plenigi_per_surfaco(surfaca_larĝo, surfaca_alto);
+    }
 }
 
 /// La normiga kunfandada formulo de §4.3 (R07).
@@ -241,14 +290,14 @@ fn plenigi(
     klipo: Limoj,
     rektangulo: Rektangulo,
     koloro: Koloro,
-    dx: i64,
-    dy: i64,
+    translokigo: (i64, i64),
+    mut skribita_regiono: Option<&mut Option<Regiono>>,
 ) {
     // L17: travidebla koloro ne efikas.
     if koloro.alfa() == 0 {
         return;
     }
-    let geometrio = Limoj::el_rektangulo_translokita(rektangulo, dx, dy);
+    let geometrio = Limoj::el_rektangulo_translokita(rektangulo, translokigo.0, translokigo.1);
     let Some(regiono) = videbla_regiono(surfaco.larĝo(), surfaco.alto(), klipo, geometrio) else {
         return;
     };
@@ -256,10 +305,20 @@ fn plenigi(
         let Some(vico) = vico_mut(surfaco, y) else {
             break;
         };
+        let mut skribita_x0 = None;
+        let mut skribita_x1 = 0;
         for x in regiono.x0..regiono.x1 {
             let indekso = x as usize;
             let celo = vico[indekso];
-            vico[indekso] = miksi_pikselon(koloro, celo, 255);
+            let nova = miksi_pikselon(koloro, celo, 255);
+            vico[indekso] = nova;
+            if skribita_regiono.is_some() && nova != celo {
+                skribita_x0.get_or_insert(x);
+                skribita_x1 = x + 1;
+            }
+        }
+        if let (Some(x0), Some(regiono)) = (skribita_x0, skribita_regiono.as_deref_mut()) {
+            registri_vicon(regiono, x0, skribita_x1, y);
         }
     }
 }
@@ -270,13 +329,13 @@ fn plenigi_rondan(
     rektangulo: Rektangulo,
     radiuso: u32,
     koloro: Koloro,
-    dx: i64,
-    dy: i64,
+    translokigo: (i64, i64),
+    mut skribita_regiono: Option<&mut Option<Regiono>>,
 ) {
     if koloro.alfa() == 0 {
         return;
     }
-    let geometrio = Limoj::el_rektangulo_translokita(rektangulo, dx, dy);
+    let geometrio = Limoj::el_rektangulo_translokita(rektangulo, translokigo.0, translokigo.1);
     let Some(regiono) = videbla_regiono(surfaco.larĝo(), surfaco.alto(), klipo, geometrio) else {
         return;
     };
@@ -287,6 +346,8 @@ fn plenigi_rondan(
         let Some(vico) = vico_mut(surfaco, y) else {
             break;
         };
+        let mut skribita_x0 = None;
+        let mut skribita_x1 = 0;
         let y_fiksita = i64::from(y) * FIKSITA_BAZO;
         for x in regiono.x0..regiono.x1 {
             let x_fiksita = i64::from(x) * FIKSITA_BAZO;
@@ -300,7 +361,15 @@ fn plenigi_rondan(
             }
             let indekso = x as usize;
             let celo = vico[indekso];
-            vico[indekso] = miksi_pikselon(koloro, celo, kovrado);
+            let nova = miksi_pikselon(koloro, celo, kovrado);
+            vico[indekso] = nova;
+            if skribita_regiono.is_some() && nova != celo {
+                skribita_x0.get_or_insert(x);
+                skribita_x1 = x + 1;
+            }
+        }
+        if let (Some(x0), Some(regiono)) = (skribita_x0, skribita_regiono.as_deref_mut()) {
+            registri_vicon(regiono, x0, skribita_x1, y);
         }
     }
 }
@@ -308,17 +377,18 @@ fn plenigi_rondan(
 fn apliki_maskon(
     surfaco: &mut Surfaco<'_>,
     klipo: Limoj,
-    origino: (i32, i32),
-    amplekso: (u32, u32),
+    rektangulo: Rektangulo,
     koloro: Koloro,
     kovradoj: &[u8],
     translokigo: (i64, i64),
+    mut skribita_regiono: Option<&mut Option<Regiono>>,
 ) {
     let (dx, dy) = translokigo;
     if koloro.alfa() == 0 {
         return;
     }
-    let Some(bezonata) = u64::from(amplekso.0).checked_mul(u64::from(amplekso.1)) else {
+    let Some(bezonata) = u64::from(rektangulo.larĝo).checked_mul(u64::from(rektangulo.alto))
+    else {
         return;
     };
     let Ok(disponebla) = u64::try_from(kovradoj.len()) else {
@@ -328,19 +398,20 @@ fn apliki_maskon(
         return;
     }
 
-    let rektangulo = Rektangulo::nova(origino.0, origino.1, amplekso.0, amplekso.1);
     let geometrio = Limoj::el_rektangulo_translokita(rektangulo, dx, dy);
     let Some(regiono) = videbla_regiono(surfaco.larĝo(), surfaco.alto(), klipo, geometrio) else {
         return;
     };
-    let origino_x = i64::from(origino.0) + dx;
-    let origino_y = i64::from(origino.1) + dy;
-    let larĝo = amplekso.0 as usize;
+    let origino_x = i64::from(rektangulo.x) + dx;
+    let origino_y = i64::from(rektangulo.y) + dy;
+    let larĝo = rektangulo.larĝo as usize;
 
     for y in regiono.y0..regiono.y1 {
         let Some(vico) = vico_mut(surfaco, y) else {
             break;
         };
+        let mut skribita_x0 = None;
+        let mut skribita_x1 = 0;
         let maska_y = i64::from(y) - origino_y;
         let Ok(maska_y) = usize::try_from(maska_y) else {
             continue;
@@ -364,7 +435,15 @@ fn apliki_maskon(
             }
             let indekso = x as usize;
             let celo = vico[indekso];
-            vico[indekso] = miksi_pikselon(koloro, celo, kovrado);
+            let nova = miksi_pikselon(koloro, celo, kovrado);
+            vico[indekso] = nova;
+            if skribita_regiono.is_some() && nova != celo {
+                skribita_x0.get_or_insert(x);
+                skribita_x1 = x + 1;
+            }
+        }
+        if let (Some(x0), Some(regiono)) = (skribita_x0, skribita_regiono.as_deref_mut()) {
+            registri_vicon(regiono, x0, skribita_x1, y);
         }
     }
 }
@@ -372,22 +451,21 @@ fn apliki_maskon(
 fn skribi_glifojn(
     surfaco: &mut Surfaco<'_>,
     klipo: Limoj,
-    pozicio: (i32, i32),
+    pozicio: (i64, i64),
     koloro: Koloro,
     tiparo: &Tiparo<'_>,
     tekstero: &str,
-    translokigo: (i64, i64),
+    mut skribita_regiono: Option<&mut Option<Regiono>>,
 ) {
     // L17: travidebla koloro ne efikas.
     if koloro.alfa() == 0 {
         return;
     }
-    let (dx, dy) = translokigo;
     let larĝo = i64::from(tiparo.larĝo());
     let alto = i64::from(tiparo.alto());
     let paŝo = tiparo.paŝo() as usize;
-    let mut x = i64::from(pozicio.0) + dx;
-    let supro = i64::from(pozicio.1) - i64::from(tiparo.baza_linio()) + dy;
+    let mut x = pozicio.0;
+    let supro = pozicio.1 - i64::from(tiparo.baza_linio());
 
     for signo in tekstero.chars() {
         if let Some(indekso) = indekso(signo) {
@@ -409,6 +487,8 @@ fn skribi_glifojn(
                         continue;
                     };
                     let glifa_vico = &glifa_datumoj[glifa_y * paŝo..(glifa_y + 1) * paŝo];
+                    let mut skribita_x0 = None;
+                    let mut skribita_x1 = 0;
                     for x_pikselo in regiono.x0..regiono.x1 {
                         let Ok(glifa_x) = usize::try_from(i64::from(x_pikselo) - x) else {
                             continue;
@@ -418,7 +498,17 @@ fn skribi_glifojn(
                         }
                         let piksela_indekso = x_pikselo as usize;
                         let celo = vico[piksela_indekso];
-                        vico[piksela_indekso] = miksi_pikselon(koloro, celo, 255);
+                        let nova = miksi_pikselon(koloro, celo, 255);
+                        vico[piksela_indekso] = nova;
+                        if skribita_regiono.is_some() && nova != celo {
+                            skribita_x0.get_or_insert(x_pikselo);
+                            skribita_x1 = x_pikselo + 1;
+                        }
+                    }
+                    if let (Some(x0), Some(regiono)) =
+                        (skribita_x0, skribita_regiono.as_deref_mut())
+                    {
+                        registri_vicon(regiono, x0, skribita_x1, y);
                     }
                 }
             }
@@ -436,23 +526,56 @@ fn skribi_glifojn(
 /// eraro: en testa konstruo `debug_assert!` ĝin montras, en eldona konstruo la
 /// ordono estas ignorata (L21).
 pub fn desegnu(surfaco: &mut Surfaco<'_>, ordonoj: &[Ordono<'_>]) {
+    desegnu_intern(surfaco, ordonoj, None);
+}
+
+/// Faru la ordonaron kaj aldonu la efektive ŝanĝitajn regionojn al `damaĝo`.
+///
+/// La damaĝo akumuliĝas ĝis la alvokanto kreas novan `Damaĝo`. Ĉiu ordono
+/// kontribuas nur se almenaŭ unu videbla pikselo ŝanĝiĝis. Ĉe pli ol 16 disaj
+/// regionoj la listo fariĝas la tuta surfaco kaj `plena()` estas vera.
+pub fn desegnu_damagon(surfaco: &mut Surfaco<'_>, ordonoj: &[Ordono<'_>], damaĝo: &mut Damaĝo) {
+    desegnu_intern(surfaco, ordonoj, Some(damaĝo));
+}
+
+fn desegnu_intern(
+    surfaco: &mut Surfaco<'_>,
+    ordonoj: &[Ordono<'_>],
+    mut damaĝo: Option<&mut Damaĝo>,
+) {
+    let surfaca_larĝo = surfaco.larĝo();
+    let surfaca_alto = surfaco.alto();
+    if let Some(damaĝo) = damaĝo.as_deref_mut()
+        && damaĝo.plena()
+    {
+        damaĝo.plenigi_per_surfaco(surfaca_larĝo, surfaca_alto);
+    }
+
     let mut klipo = Limoj::el_surfaco(surfaco.larĝo(), surfaco.alto());
     let mut stako = [Limoj::el_surfaco(0, 0); MAKSIMUMA_KLIPA_PROFUNDO];
     let mut profundo = 0usize;
     let mut translokigo = (0i64, 0i64);
     let mut translokiga_stako = [(0i64, 0i64); MAKSIMUMA_TRANSLOKIGA_PROFUNDO];
     let mut translokiga_profundo = 0usize;
+    let kolektu_damagon = damaĝo.is_some();
 
     for ordono in ordonoj.iter().take(MAKSIMUMAJ_ORDONOJ) {
         match *ordono {
             Ordono::Plenigi { rektangulo, koloro } => {
+                let mut skribita_regiono = None;
                 plenigi(
                     surfaco,
                     klipo,
                     rektangulo,
                     koloro,
-                    translokigo.0,
-                    translokigo.1,
+                    translokigo,
+                    kolektu_damagon.then_some(&mut skribita_regiono),
+                );
+                registri_damagon(
+                    damaĝo.as_deref_mut(),
+                    skribita_regiono,
+                    surfaca_larĝo,
+                    surfaca_alto,
                 );
             }
             Ordono::Klipo { rektangulo } => {
@@ -478,14 +601,21 @@ pub fn desegnu(surfaco: &mut Surfaco<'_>, ordonoj: &[Ordono<'_>]) {
                 radiuso,
                 koloro,
             } => {
+                let mut skribita_regiono = None;
                 plenigi_rondan(
                     surfaco,
                     klipo,
                     rektangulo,
                     radiuso,
                     koloro,
-                    translokigo.0,
-                    translokigo.1,
+                    translokigo,
+                    kolektu_damagon.then_some(&mut skribita_regiono),
+                );
+                registri_damagon(
+                    damaĝo.as_deref_mut(),
+                    skribita_regiono,
+                    surfaca_larĝo,
+                    surfaca_alto,
                 );
             }
             Ordono::Masko {
@@ -494,14 +624,21 @@ pub fn desegnu(surfaco: &mut Surfaco<'_>, ordonoj: &[Ordono<'_>]) {
                 koloro,
                 kovradoj,
             } => {
+                let mut skribita_regiono = None;
                 apliki_maskon(
                     surfaco,
                     klipo,
-                    origino,
-                    amplekso,
+                    Rektangulo::nova(origino.0, origino.1, amplekso.0, amplekso.1),
                     koloro,
                     kovradoj,
                     translokigo,
+                    kolektu_damagon.then_some(&mut skribita_regiono),
+                );
+                registri_damagon(
+                    damaĝo.as_deref_mut(),
+                    skribita_regiono,
+                    surfaca_larĝo,
+                    surfaca_alto,
                 );
             }
             Ordono::Translokigo { dx, dy } => {
@@ -533,14 +670,24 @@ pub fn desegnu(surfaco: &mut Surfaco<'_>, ordonoj: &[Ordono<'_>]) {
                 tiparo,
                 tekstero,
             } => {
+                let mut skribita_regiono = None;
                 skribi_glifojn(
                     surfaco,
                     klipo,
-                    (origino, bazo),
+                    (
+                        i64::from(origino) + translokigo.0,
+                        i64::from(bazo) + translokigo.1,
+                    ),
                     koloro,
                     tiparo,
                     tekstero,
-                    translokigo,
+                    kolektu_damagon.then_some(&mut skribita_regiono),
+                );
+                registri_damagon(
+                    damaĝo.as_deref_mut(),
+                    skribita_regiono,
+                    surfaca_larĝo,
+                    surfaca_alto,
                 );
             }
         }

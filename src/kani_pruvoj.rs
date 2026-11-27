@@ -1,5 +1,6 @@
 //! Formalaj pruvoj per Kani; ili ruliĝas nur en DI (Q02).
 
+use crate::damago::Damaĝo;
 use crate::desegnu::{Limoj, kovrado_el_specimenoj, miksi_kanalojn, videbla_regiono};
 use crate::geometrio::Rektangulo;
 use crate::tiparo::{GLIFOJ, indekso};
@@ -67,4 +68,17 @@ fn glifo_indekso_en_limoj() {
     if let Some(indekso) = indekso(signo) {
         assert!(indekso < GLIFOJ);
     }
+}
+
+/// Fazo 4: damaĝlisto saturiĝas post 16 apartaj regionoj.
+#[kani::proof]
+fn damago_saturigas_kun_limo() {
+    let mut damaĝo = Damaĝo::nova();
+    let mut indekso = 0u32;
+    while indekso < 17 {
+        damaĝo.aldoni(Rektangulo::nova((indekso * 2) as i32, 0, 1, 1));
+        indekso += 1;
+    }
+    assert!(damaĝo.plena());
+    assert!(damaĝo.rektanguloj().len() <= 16);
 }

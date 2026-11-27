@@ -11,3 +11,4 @@ pruvo po tasko (Q06).
 | `klipo_restas_en_surfaco` | `src/kani_pruvoj.rs` | L15: la videbla regiono restas ene de `larĝo × alto`, kaj la kolumna indekso restas sub `paŝo`; `plenigi` gardas la vican komencon per `get_mut`, do ĝi ne skribas ekster la bufro. |
 | `rondigo_kovrado_en_limoj` | `src/kani_pruvoj.rs` | R04–R06: la kovrado de la 4 × 4-superprovado restas ≤ 255, ĉar ĝi venas el al plej 16 specimenoj. |
 | `glifo_indekso_en_limoj` | `src/kani_pruvoj.rs` | T01–T02: ĉiu signo, kiun la tiparo rekonas, ricevas indekson sub 117. |
+| `damago_saturigas_kun_limo` | `src/kani_pruvoj.rs` | Fazo 4: la listo de damaĝaj ortanguloj saturiĝas post 16 apartaj regionoj kaj neniam superas sian kapaciton. |
